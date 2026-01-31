@@ -1,0 +1,20 @@
+services:
+  conan:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: conan-app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+      - ./public/uploads:/app/public/uploads
+    environment:
+      - DATABASE_PATH=/app/data/conan.db
+      - AUTH_USER=${AUTH_USER:-admin}
+      - AUTH_PASSWORD=${AUTH_PASSWORD:-supersecret}
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key}
+    restart: unless-stopped
+
+volumes:
+  data:
