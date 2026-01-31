@@ -7,13 +7,13 @@ import { redirect } from 'next/navigation';
 export async function createPageAction() {
   const result = db.prepare('INSERT INTO pages (title, category) VALUES (?, ?)').run('Untitled', 'inbox');
   revalidatePath('/');
-  return { id: result.lastInsertRowid };
+  redirect(`/p/${result.lastInsertRowid}`);
 }
 
 export async function createPageFromLinkAction(title: string) {
   const result = db.prepare('INSERT INTO pages (title, category) VALUES (?, ?)').run(title, 'inbox');
   revalidatePath('/');
-  return { id: result.lastInsertRowid };
+  redirect(`/p/${result.lastInsertRowid}`);
 }
 
 export async function movePageAction(id: number, category: string) {

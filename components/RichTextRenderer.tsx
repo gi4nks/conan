@@ -42,8 +42,7 @@ export default function RichTextRenderer({ content, allPages, className = "" }: 
     const handleDeadLinkClick = async (e: React.MouseEvent, title: string) => {
         e.preventDefault();
         e.stopPropagation();
-        const result = await createPageFromLinkAction(title);
-        router.push(`/p/${result.id}`);
+        await createPageFromLinkAction(title);
     };
 
     return (

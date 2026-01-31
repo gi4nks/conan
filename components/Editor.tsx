@@ -66,6 +66,26 @@ export default function Editor({ initialPage, initialBlocks, allPages, backlinks
   const [slashIndex, setSlashIndex] = useState(0);
   const slashMenuRef = useRef<HTMLDivElement>(null);
 
+  // Scroll active slash item into view
+  useEffect(() => {
+    if (slashActiveBlockId && slashMenuRef.current) {
+      const activeItem = slashMenuRef.current.children[slashIndex] as HTMLElement;
+      if (activeItem) {
+        activeItem.scrollIntoView({ block: 'nearest' });
+      }
+    }
+  }, [slashIndex, slashActiveBlockId]);
+
+  // Lock body scroll when slash menu is active
+  useEffect(() => {
+    if (slashActiveBlockId) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [slashActiveBlockId]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -121,11 +141,32 @@ export default function Editor({ initialPage, initialBlocks, allPages, backlinks
   };
 
   const handleSlashKeyDown = (e: React.KeyboardEvent) => {
-      const filteredCount = 10; // Simple for now
+      const filteredOptions = BLOCK_OPTIONS.filter(opt => opt.label.toLowerCase().includes(slashQuery.toLowerCase()));
+      const filteredCount = filteredOptions.length;
+      
       if (!slashActiveBlockId) return;
-      if (e.key === 'ArrowUp') { e.preventDefault(); setSlashIndex(prev => (prev > 0 ? prev - 1 : filteredCount - 1)); }
-      else if (e.key === 'ArrowDown') { e.preventDefault(); setSlashIndex(prev => (prev < filteredCount - 1 ? prev + 1 : 0)); }
-      else if (e.key === 'Escape') { setSlashActiveBlockId(null); }
+      
+      if (e.key === 'ArrowUp') { 
+          e.preventDefault(); 
+          setSlashIndex(prev => (prev > 0 ? prev - 1 : filteredCount - 1)); 
+      }
+      else if (e.key === 'ArrowDown') { 
+          e.preventDefault(); 
+          setSlashIndex(prev => (prev < filteredCount - 1 ? prev + 1 : 0)); 
+      }
+      else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (filteredCount > 0) {
+              const opt = filteredOptions[slashIndex];
+              const blockIndex = store.blocks.findIndex(b => b.tempId === slashActiveBlockId);
+              store.updateBlock(slashActiveBlockId, ''); 
+              store.addBlock(opt.type, blockIndex - 1); 
+              setSlashActiveBlockId(null);
+          }
+      }
+      else if (e.key === 'Escape') { 
+          setSlashActiveBlockId(null); 
+      }
   };
 
   const handleBlockUpdate = (tempId: string, content: string) => {
@@ -169,7 +210,7 @@ export default function Editor({ initialPage, initialBlocks, allPages, backlinks
         </div>
         
         <div className="px-8 md:px-16 w-full">
-            <input className="text-4xl font-black w-full bg-transparent border-none focus:outline-none mb-2 placeholder-base-content/10 tracking-tight" value={store.title} onChange={(e) => store.setTitle(e.target.value)} placeholder="Untitled Case" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (store.blocks.length > 0) store.setFocusedBlockId(store.blocks[0].tempId); } }} />
+            <input className="text-4xl font-black w-full bg-transparent border-none focus:outline-none mb-2 placeholder-base-content/10 tracking-tight" value={store.title} onChange={(e) => store.setTitle(e.target.value)} placeholder="Untitled Case" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (store.blocks.length > 0) { store.setFocusedBlockId(store.blocks[0].tempId); } else { store.addBlock('paragraph', -1); } } }} />
             
             <div className="flex flex-wrap items-center gap-y-4 gap-x-8 mb-10 border-y border-base-200 py-4">
                 <div className="flex items-center gap-3">
@@ -208,26 +249,66 @@ export default function Editor({ initialPage, initialBlocks, allPages, backlinks
                                     slashActive={slashActiveBlockId === block.tempId} 
                                     onSlashKeyDown={handleSlashKeyDown} 
                                 />
-                                {slashActiveBlockId === block.tempId && (
-                                    <div className={`absolute left-0 z-[100] w-64 bg-base-100/95 backdrop-blur-xl shadow-2xl border border-base-300 rounded-xl overflow-hidden mt-1 animate-in zoom-in-95 duration-150 ${index > store.blocks.length - 4 ? 'bottom-full mb-4' : 'top-full'}`}>
-                                        <div className="p-2 text-[9px] font-black text-base-content/30 uppercase tracking-[0.2em] bg-base-200/50 border-b border-base-300/50">Toolkit</div>
-                                        <div ref={slashMenuRef} className="p-1 max-h-[280px] overflow-y-auto scrollbar-hide">
-                                            {BLOCK_OPTIONS.filter(opt => opt.label.toLowerCase().includes(slashQuery.toLowerCase())).map((opt, i) => (
-                                                <button key={opt.type} data-index={i} onClick={() => { store.updateBlock(block.tempId, ''); store.addBlock(opt.type, index-1); setSlashActiveBlockId(null); }} className={`flex items-center gap-3 w-full p-1.5 rounded-lg transition-all duration-200 group/btn ${i === slashIndex ? 'bg-primary text-primary-content shadow-md shadow-primary/20' : 'hover:bg-base-200'}`}>
-                                                    <div className={`w-7 h-7 rounded flex items-center justify-center text-base shadow-inner shrink-0 ${i === slashIndex ? 'bg-white/20' : 'bg-base-200 group-hover/btn:bg-base-100'}`}><span className={i === slashIndex ? 'text-white' : opt.color}>{opt.icon}</span></div>
-                                                    <div className="flex flex-col text-left flex-1 min-w-0"><span className={`font-bold text-xs tracking-tight ${i === slashIndex ? 'text-white' : ''}`}>{opt.label}</span><span className={`text-[9px] truncate leading-tight ${i === slashIndex ? 'text-white/70' : 'opacity-50'}`}>{opt.description}</span></div>
-                                                    {i === slashIndex && <span className="text-[9px] font-black opacity-40 bg-black/10 px-1.5 py-0.5 rounded text-white">⏎</span>}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         ))}
-                        <div className="h-32 -mt-4 cursor-text" onClick={() => { if (store.blocks.length > 0) store.addBlock('paragraph', store.blocks.length - 1); }}></div>
+                        <div className="h-32 -mt-4 cursor-text" onClick={() => store.addBlock('paragraph', store.blocks.length - 1)}></div>
                     </div>
                 </SortableContext>
             </DndContext>
+
+            {/* Centered Slash Toolkit */}
+            {slashActiveBlockId && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-base-300/20 backdrop-blur-[2px]" onClick={() => setSlashActiveBlockId(null)}>
+                    <div 
+                        className="w-full max-w-sm bg-base-100 shadow-2xl border border-base-300 rounded-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-3 bg-base-200/50 border-b border-base-300 flex items-center justify-between">
+                            <span className="text-[10px] font-black text-base-content/40 uppercase tracking-[0.2em]">Forensic Toolkit</span>
+                            <kbd className="kbd kbd-xs opacity-50">ESC</kbd>
+                        </div>
+                        <div className="p-2">
+                            <input 
+                                className="w-full bg-base-200/50 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 ring-primary/20 mb-2 font-mono"
+                                placeholder="Search tools..."
+                                value={slashQuery}
+                                onChange={(e) => {
+                                    setSlashQuery(e.target.value);
+                                    setSlashIndex(0);
+                                }}
+                                autoFocus
+                                onKeyDown={handleSlashKeyDown}
+                            />
+                            <div ref={slashMenuRef} className="max-h-[350px] overflow-y-auto flex flex-col gap-1">
+                                {BLOCK_OPTIONS.filter(opt => opt.label.toLowerCase().includes(slashQuery.toLowerCase())).map((opt, i) => {
+                                    const blockIndex = store.blocks.findIndex(b => b.tempId === slashActiveBlockId);
+                                    return (
+                                        <button 
+                                            key={opt.type} 
+                                            onClick={() => { 
+                                                store.updateBlock(slashActiveBlockId, ''); 
+                                                store.addBlock(opt.type, blockIndex - 1); 
+                                                setSlashActiveBlockId(null); 
+                                            }} 
+                                            className={`flex items-center gap-3 w-full p-2 rounded-xl transition-all duration-200 group/btn ${i === slashIndex ? 'bg-primary text-primary-content shadow-lg shadow-primary/20 scale-[1.02]' : 'hover:bg-base-200'}`}
+                                        >
+                                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg shadow-inner shrink-0 ${i === slashIndex ? 'bg-white/20' : 'bg-base-200 group-hover/btn:bg-base-100'}`}>
+                                                <span className={i === slashIndex ? 'text-white' : opt.color}>{opt.icon}</span>
+                                            </div>
+                                            <div className="flex flex-col text-left flex-1 min-w-0">
+                                                <span className={`font-bold text-sm tracking-tight ${i === slashIndex ? 'text-white' : ''}`}>{opt.label}</span>
+                                                <span className={`text-[10px] truncate leading-tight ${i === slashIndex ? 'text-white/70' : 'opacity-50'}`}>{opt.description}</span>
+                                            </div>
+                                            {i === slashIndex && <span className="text-[10px] font-black opacity-40 bg-black/10 px-2 py-0.5 rounded text-white uppercase tracking-tighter">Enter</span>}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {backlinks.length > 0 && (
                 <div className="mt-20 pt-12 border-t border-base-300 pb-20">
                     <h3 className="text-xs font-bold uppercase tracking-widest text-base-content/30 mb-6">Cross References (Linked Clues)</h3>

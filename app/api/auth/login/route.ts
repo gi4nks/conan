@@ -1,29 +1,20 @@
+import { auth } from '@/lib/auth';
 import { NextResponse } from 'next/server';
-import { login, checkRateLimit, recordLoginAttempt } from '@/lib/auth';
-import { handleApiError } from '@/lib/api-error';
 
 export async function POST(request: Request) {
   try {
-    const ip = request.headers.get('x-forwarded-for') || 'unknown';
-    const { username, password } = await request.json();
+    const body = await request.json();
+    const user = body.username?.trim();
+    const password = body.password?.trim();
+    
+    const formData = new FormData();
+    formData.append('user', user);
+    formData.append('password', password);
 
-    const isAllowed = await checkRateLimit(ip);
-    if (!isAllowed) {
-      return handleApiError(new Error('Rate limit exceeded'), 'RATE_LIMIT');
-    }
-
-    if (
-      username === process.env.AUTH_USER &&
-      password === process.env.AUTH_PASSWORD
-    ) {
-      await recordLoginAttempt(ip, true);
-      await login();
-      return NextResponse.json({ success: true });
-    }
-
-    await recordLoginAttempt(ip, false);
-    return handleApiError(new Error('Invalid badge credentials'), 'UNAUTHORIZED');
-  } catch (error) {
-    return handleApiError(error, 'SERVER_ERROR');
+    await auth.login(formData);
+    
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || 'Invalid credentials' }, { status: 401 });
   }
 }

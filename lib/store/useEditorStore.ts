@@ -47,14 +47,21 @@ export const useEditorStore = create<EditorState>((set) => ({
   isSaving: false,
   focusedBlockId: null,
 
-  initialize: (page, blocks) => set({
-    id: page.id,
-    title: page.title,
-    category: page.category || 'inbox',
-    deadline: page.deadline || '',
-    tags: page.tags || '',
-    blocks: blocks.map(b => ({ ...b, tempId: b.tempId || generateId() })),
-  }),
+  initialize: (page, blocks) => {
+    const initializedBlocks = blocks.length > 0 
+      ? blocks.map(b => ({ ...b, tempId: b.tempId || generateId() }))
+      : [{ tempId: generateId(), type: 'paragraph', content: '', order_index: 0 }];
+      
+    set({
+      id: page.id,
+      title: page.title,
+      category: page.category || 'inbox',
+      deadline: page.deadline || '',
+      tags: page.tags || '',
+      blocks: initializedBlocks,
+      focusedBlockId: blocks.length === 0 ? initializedBlocks[0].tempId : null
+    });
+  },
 
   setTitle: (title) => set({ title }),
   setCategory: (category) => set({ category }),
