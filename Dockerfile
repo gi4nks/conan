@@ -16,8 +16,8 @@ RUN npm run build
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
-ENV DATABASE_PATH="/app/data/conan.db"
+ENV NODE_ENV production
+ENV DATABASE_PATH "/app/data/conan.db"
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -28,6 +28,7 @@ RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/entrypoint.sh ./entrypoint.sh
 
 # Docker Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
@@ -36,7 +37,7 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
 USER nextjs
 
 EXPOSE 3000
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
 
-CMD ["node", "server.js"]
+ENTRYPOINT ["./entrypoint.sh"]

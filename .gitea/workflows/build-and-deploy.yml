@@ -1,0 +1,72 @@
+name: Build and Deploy Docker Image
+
+# =============================================================================
+# REQUIRED GITEA VARIABLES (Settings > Actions > Variables):
+#   REGISTRY_HOST     - Docker registry host (e.g., 192.168.1.150:5000)
+#   REGISTRY_IMAGE    - Base image for builds (e.g., docker-node:latest)
+#   APP_NAME          - Application name (e.g., greedy) [optional, defaults to repo name]
+# =============================================================================
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: [docker]
+    container:
+      image: ${{ vars.REGISTRY_HOST }}/${{ vars.REGISTRY_IMAGE }}
+    env:
+      REGISTRY_HOST: ${{ vars.REGISTRY_HOST }}
+      REGISTRY_IMAGE: ${{ vars.REGISTRY_IMAGE }}
+      APP_NAME: ${{ vars.APP_NAME || 'conan' }}
+
+    steps:
+      - name: Validate required variables
+        run: |
+          if [ -z "${{ vars.REGISTRY_HOST }}" ]; then
+            echo "ERROR: REGISTRY_HOST variable is not set"
+            exit 1
+          fi
+          if [ -z "${{ vars.REGISTRY_IMAGE }}" ]; then
+            echo "ERROR: REGISTRY_IMAGE variable is not set"
+            exit 1
+          fi
+          echo "Registry: ${{ vars.REGISTRY_HOST }}"
+          echo "Image: ${{ vars.REGISTRY_IMAGE }}"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            network=host
+          config-inline: |
+            [registry."${{ vars.REGISTRY_HOST }}"]
+              http = true
+              insecure = true
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ vars.REGISTRY_HOST }}/${{ env.APP_NAME }}:latest
+          provenance: false
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "Docker image built and pushed successfully!"
+          echo "Registry: ${{ vars.REGISTRY_HOST }}/${{ env.APP_NAME }}:latest"

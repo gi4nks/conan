@@ -1,5 +1,7 @@
+version: '3.8'
+
 services:
-  conan:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,10 +13,10 @@ services:
       - ./public/uploads:/app/public/uploads
     environment:
       - DATABASE_PATH=/app/data/conan.db
-      - AUTH_USER=${AUTH_USER:-admin}
-      - AUTH_PASSWORD=${AUTH_PASSWORD:-supersecret}
-      - JWT_SECRET=${JWT_SECRET:-your-secret-key}
-    restart: unless-stopped
+      - CONAN_AUTH_USER=${CONAN_AUTH_USER:-admin}
+      - CONAN_AUTH_PASSWORD=${CONAN_AUTH_PASSWORD:-supersecret}
+      - ANT_JWT_SECRET=${ANT_JWT_SECRET:-your-secret-key}
+    restart: always
 
 volumes:
   data:

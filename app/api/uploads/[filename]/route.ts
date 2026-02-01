@@ -19,7 +19,7 @@ export async function GET(
   }
 
   try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key');
+    const secret = new TextEncoder().encode(process.env.ANT_JWT_SECRET || 'atlas-secret-key-12345-very-long-and-secure-default');
     await jwtVerify(token, secret);
   } catch (err) {
     return new NextResponse('Invalid Credentials', { status: 401 });
