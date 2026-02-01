@@ -3,17 +3,18 @@ FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies including private packages
-COPY package*.json ./
-
 # Support for private GitHub packages
 ARG NPM_TOKEN
-RUN if [ -n "$NPM_TOKEN" ]; then \
-      echo "@gi4nks:registry=https://npm.pkg.github.com" > .npmrc && \
-      echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> .npmrc; \
-    fi
+COPY package*.json ./
 
-RUN npm ci && rm -f .npmrc
+# Create .npmrc, run npm ci, and remove .npmrc in a single layer to protect the secret
+RUN if [ -z "$NPM_TOKEN" ]; then \
+      echo "ERROR: NPM_TOKEN build argument is required for private packages" && exit 1; \
+    fi && \
+    echo "@gi4nks:registry=https://npm.pkg.github.com" > .npmrc && \
+    echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> .npmrc && \
+    npm ci && \
+    rm -f .npmrc
 
 # Stage 2: Builder
 FROM node:20-alpine AS builder
@@ -41,7 +42,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/entrypoint.sh ./entrypoint.sh
 
 # Docker Healthcheck
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 
   CMD wget -no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
 
 USER nextjs
