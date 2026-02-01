@@ -17,18 +17,27 @@ interface RichTextRendererProps {
 }
 
 function formatInlineMarkdown(text: string) {
-    const rawHtml = text
+    // Escape HTML to prevent XSS before applying markdown
+    let escaped = text
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/&lt;u&gt;(.*?)&lt;\/u&gt;/g, '<u>$1</u>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/~~(.*?)~~/g, '<del>$1</del>')
-        .replace(/`([^`]+)`/g, '<code class="bg-base-300 px-1 rounded text-sm">$1</code>')
-        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">$1</a>');
+        .replace(/>/g, '&gt;');
+
+    // Markdown patterns
+    const patterns = [
+        { regex: /&lt;u&gt;(.*?)&lt;\/u&gt;/g, replacement: '<u>$1</u>' },
+        { regex: /\*\*(.*?)\*\*/g, replacement: '<strong>$1</strong>' },
+        { regex: /\*(.*?)\*/g, replacement: '<em>$1</em>' },
+        { regex: /~~(.*?)~~/g, replacement: '<del>$1</del>' },
+        { regex: /`([^`]+)`/g, replacement: '<code class="bg-base-300 px-1 rounded text-sm">$1</code>' },
+        { regex: /\[(.*?)\]\((.*?)\)/g, replacement: '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">$1</a>' }
+    ];
+
+    patterns.forEach(({ regex, replacement }) => {
+        escaped = escaped.replace(regex, replacement);
+    });
     
-    return DOMPurify.sanitize(rawHtml, { 
+    return DOMPurify.sanitize(escaped, { 
         ALLOWED_TAGS: ['strong', 'em', 'del', 'code', 'a', 'u'], 
         ALLOWED_ATTR: ['href', 'target', 'rel', 'class'] 
     });
@@ -69,7 +78,7 @@ export default function RichTextRenderer({ content, allPages, className = "" }: 
                             key={index} 
                             onClick={(e) => handleDeadLinkClick(e, title)}
                             className="text-error font-bold border-b-2 border-dashed border-error/30 hover:bg-error/5 px-1 rounded-sm transition-colors cursor-help"
-                            title="Dead Lead: Click to investigate (create page)"
+                            title="Broken Link: Click to create this page"
                         >
                             {title}
                         </button>

@@ -62,7 +62,7 @@ export default function TextBlock({ type, value, onChange, isFocused, onKeyDown,
             <div className="flex my-2 group/quote">
                 <div className="w-1.5 bg-primary/40 rounded-full mr-6 shrink-0 shadow-[0_0_10px_rgba(var(--p),0.2)]"></div>
                 <div className="flex-1 bg-base-200/30 p-4 rounded-r-2xl border-l border-white/5 italic text-base-content/80">
-                    {renderInput("font-serif text-lg", "Witness statement...")}
+                    {renderInput("font-serif text-lg", "Quote...")}
                 </div>
             </div>
         );

@@ -65,7 +65,7 @@ export default function CommandPalette() {
           </svg>
           <input 
             className="w-full bg-transparent outline-none text-lg placeholder-base-content/30"
-            placeholder="Investigate case files..."
+            placeholder="Search pages..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
