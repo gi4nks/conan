@@ -5,6 +5,9 @@ name: Build and Deploy Docker Image
 #   REGISTRY_HOST     - Docker registry host (e.g., 192.168.1.150:5000)
 #   REGISTRY_IMAGE    - Base image for builds (e.g., docker-node:latest)
 #   APP_NAME          - Application name (e.g., greedy) [optional, defaults to repo name]
+#
+# REQUIRED GITEA SECRETS (Settings > Actions > Secrets):
+#   NPM_TOKEN         - GitHub Personal Access Token with read:packages scope
 # =============================================================================
 
 on:
@@ -64,6 +67,8 @@ jobs:
           push: true
           tags: ${{ vars.REGISTRY_HOST }}/${{ env.APP_NAME }}:latest
           provenance: false
+          build-args: |
+            NPM_TOKEN=${{ secrets.NPM_TOKEN }}
 
       - name: Notify deployment success
         if: success()

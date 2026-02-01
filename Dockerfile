@@ -2,8 +2,18 @@
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
+
+# Install dependencies including private packages
 COPY package*.json ./
-RUN npm ci
+
+# Support for private GitHub packages
+ARG NPM_TOKEN
+RUN if [ -n "$NPM_TOKEN" ]; then \
+      echo "@gi4nks:registry=https://npm.pkg.github.com" > .npmrc && \
+      echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> .npmrc; \
+    fi
+
+RUN npm ci && rm -f .npmrc
 
 # Stage 2: Builder
 FROM node:20-alpine AS builder
@@ -16,8 +26,8 @@ RUN npm run build
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV DATABASE_PATH "/app/data/conan.db"
+ENV NODE_ENV=production
+ENV DATABASE_PATH="/app/data/conan.db"
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -37,7 +47,7 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
 USER nextjs
 
 EXPOSE 3000
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 ENTRYPOINT ["./entrypoint.sh"]
