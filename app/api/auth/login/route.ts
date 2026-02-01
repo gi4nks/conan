@@ -11,9 +11,21 @@ export async function POST(request: Request) {
     formData.append('user', user);
     formData.append('password', password);
 
-    await auth.login(formData);
+    const token = await auth.login(formData);
     
-    return NextResponse.json({ success: true });
+    const response = NextResponse.json({ success: true });
+    
+    if (token) {
+      response.cookies.set('conan_session', token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7
+      });
+    }
+
+    return response;
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Invalid credentials' }, { status: 401 });
   }
