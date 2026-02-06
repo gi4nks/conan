@@ -42,7 +42,7 @@ export default function TagInput({ tags, onChange }: TagInputProps) {
       <span className="text-primary font-bold ml-1 opacity-50">#</span>
       
       {tagArray.map((tag, index) => (
-        <span key={index} className="badge badge-primary badge-sm gap-1 py-3 pr-1 pl-3 font-semibold group flex items-center">
+        <span key={index} className="badge badge-primary badge-sm gap-1 py-3 pr-1 pl-3 font-mono font-bold group flex items-center tracking-tighter">
           <Link href={`/search?q=${encodeURIComponent(tag)}`} className="hover:underline">
             {tag}
           </Link>
