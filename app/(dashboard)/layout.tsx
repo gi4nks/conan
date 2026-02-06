@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { pageService } from '@/lib/services/pageService';
+import { blockService } from '@/lib/services/blockService';
 import DashboardWrapper from './DashboardWrapper';
 import SidebarSkeleton from '@/components/SidebarSkeleton';
 
@@ -7,8 +8,9 @@ export const dynamic = 'force-dynamic';
 
 async function SidebarLoader({ children }: { children: React.ReactNode }) {
   const pages = pageService.getAllPages();
+  const taskCount = blockService.getPendingTaskCount();
   return (
-    <DashboardWrapper pages={pages}>
+    <DashboardWrapper pages={pages} taskCount={taskCount}>
         {children}
     </DashboardWrapper>
   );

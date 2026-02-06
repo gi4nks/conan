@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { restorePageAction, deletePagePermanentlyAction, emptyTrashAction } from '@/lib/actions';
 
-export default function Sidebar({ pages }: { pages: any[] }) {
+export default function Sidebar({ pages, taskCount }: { pages: any[], taskCount: number }) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
@@ -59,6 +59,9 @@ export default function Sidebar({ pages }: { pages: any[] }) {
                     <h3 className={`text-[11px] font-black uppercase tracking-[0.12em] flex items-center gap-2 ${pathname === '/tasks' ? 'text-primary' : 'text-base-content/60'}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${pathname === '/tasks' ? 'bg-primary' : 'bg-base-content/20'}`}></span> Tasks
                     </h3>
+                    {taskCount > 0 && (
+                        <span className={`text-[11px] font-mono opacity-40 ${pathname === '/tasks' ? 'text-primary' : ''}`}>{taskCount}</span>
+                    )}
                 </Link>
 
                 <Link href="/inbox" className="flex items-center justify-between px-4 py-2 hover:bg-base-200 rounded-lg mx-2 transition-colors group">

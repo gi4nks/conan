@@ -6,10 +6,12 @@ import HeaderToolbar from '@/components/HeaderToolbar';
 import CommandPalette from '@/components/CommandPalette';
 export default function DashboardWrapper({
   children,
-  pages
+  pages,
+  taskCount
 }: {
   children: React.ReactNode;
   pages: any[];
+  taskCount: number;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
@@ -21,7 +23,7 @@ export default function DashboardWrapper({
       {/* Left Sidebar */}
       <div className={`transition-all duration-300 ease-in-out h-full overflow-hidden ${isSidebarOpen ? 'w-64 border-r border-base-300' : 'w-0'}`}>
         <div className="w-64 h-full">
-            <Sidebar pages={pages} />
+            <Sidebar pages={pages} taskCount={taskCount} />
         </div>
       </div>
 

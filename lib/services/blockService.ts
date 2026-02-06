@@ -32,5 +32,15 @@ export const blockService = {
         p.title ASC, 
         b.order_index ASC
     `).all() as any[];
+  },
+
+  getPendingTaskCount() {
+    const result = db.prepare(`
+      SELECT COUNT(*) as count 
+      FROM blocks b
+      JOIN pages p ON b.page_id = p.id
+      WHERE b.type = 'checkbox' AND b.content NOT LIKE '[x] %' AND p.is_deleted = 0
+    `).get() as any;
+    return result.count;
   }
 };
