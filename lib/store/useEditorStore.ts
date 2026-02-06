@@ -29,6 +29,7 @@ interface EditorState {
   setTags: (tags: string) => void;
   setBlocks: (blocks: Block[]) => void;
   updateBlock: (tempId: string, content: string) => void;
+  updateBlockType: (tempId: string, type: string) => void;
   addBlock: (type: string, index: number) => void;
   deleteBlock: (tempId: string) => void;
   setIsSaving: (isSaving: boolean) => void;
@@ -74,6 +75,11 @@ export const useEditorStore = create<EditorState>((set) => ({
 
   updateBlock: (tempId, content) => set((state) => ({
     blocks: state.blocks.map(b => b.tempId === tempId ? { ...b, content } : b)
+  })),
+
+  updateBlockType: (tempId, type) => set((state) => ({
+    blocks: state.blocks.map(b => b.tempId === tempId ? { ...b, type } : b),
+    focusedBlockId: tempId
   })),
 
   addBlock: (type, index) => set((state) => {

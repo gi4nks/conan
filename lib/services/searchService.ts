@@ -8,7 +8,7 @@ export const searchService = {
     const pages = db.prepare(`
       SELECT id, title, category, tags, 'page' as type 
       FROM pages 
-      WHERE title LIKE ? OR tags LIKE ?
+      WHERE (title LIKE ? OR tags LIKE ?) AND is_deleted = 0
       LIMIT ?
     `).all(`%${query}%`, `%${query}%`, limit) as any[];
 
@@ -17,7 +17,7 @@ export const searchService = {
       SELECT p.id, p.title, p.category, p.tags, b.content as snippet, 'block' as type
       FROM blocks b
       JOIN pages p ON b.page_id = p.id
-      WHERE b.content LIKE ?
+      WHERE b.content LIKE ? AND p.is_deleted = 0
       GROUP BY p.id
       LIMIT ?
     `).all(`%${query}%`, limit) as any[];

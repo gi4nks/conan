@@ -2,7 +2,7 @@ import db from '@/lib/db';
 
 export const pageService = {
   getAllPages() {
-    return db.prepare('SELECT id, title, category, deadline, tags FROM pages WHERE is_deleted = 0 ORDER BY updated_at DESC').all() as any[];
+    return db.prepare('SELECT id, title, category, deadline, tags, is_deleted FROM pages ORDER BY updated_at DESC').all() as any[];
   },
 
   getTrashPages() {

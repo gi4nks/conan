@@ -9,7 +9,7 @@ import path from 'path';
 export async function GET() {
   try {
     const zip = new AdmZip();
-    const pages = pageService.getAllPages();
+    const pages = pageService.getAllPages().filter(p => p.is_deleted === 0);
 
     for (const page of pages) {
       const blocks = blockService.getBlocksByPageId(page.id);

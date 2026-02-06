@@ -163,9 +163,9 @@ export default function Editor({ initialPage, initialBlocks, allPages, backlinks
           e.preventDefault();
           if (filteredCount > 0) {
               const opt = filteredOptions[slashIndex];
-              const blockIndex = store.blocks.findIndex(b => b.tempId === slashActiveBlockId);
-              store.updateBlock(slashActiveBlockId, ''); 
-              store.addBlock(opt.type, blockIndex - 1); 
+              // Update the current block instead of adding a new one
+              store.updateBlockType(slashActiveBlockId, opt.type);
+              store.updateBlock(slashActiveBlockId, opt.type === 'code' ? JSON.stringify({ language: 'javascript', code: '' }) : '');
               setSlashActiveBlockId(null);
           }
       }
@@ -245,7 +245,7 @@ export default function Editor({ initialPage, initialBlocks, allPages, backlinks
   ) : null;
 
   return (
-     <div className="w-full max-w-none mx-auto py-8 relative">
+     <div className="w-full py-8 relative">
         {metadataPortal}
         
         <div className="flex justify-end items-center mb-4 gap-1 px-8 shrink-0">
@@ -375,9 +375,12 @@ function SortableBlock({ block, index, previousBlockType, onUpdate, onDelete, on
             onChange: (val: string) => onUpdate(block.tempId, val), 
             isFocused, 
             onKeyDown: (e: any) => { 
+                if (slashActive) {
+                    onSlashKeyDown(e);
+                    return;
+                }
                 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onEnter(); } 
                 if (e.key === 'Backspace' && block.content === '') { e.preventDefault(); onBackspace(); } 
-                if (slashActive) onSlashKeyDown(e); 
             },
             // Props used by specific blocks
             allPages,
