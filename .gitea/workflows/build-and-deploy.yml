@@ -1,5 +1,15 @@
 name: Build and Deploy Docker Image
 
+# =============================================================================
+# REQUIRED GITEA VARIABLES (Settings > Actions > Variables):
+#   REGISTRY_HOST     - Docker registry host (e.g., 192.168.1.150:5000)
+#   REGISTRY_IMAGE    - Base image for builds (e.g., docker-node:latest)
+#   APP_NAME          - Application name (e.g., conan) [optional, defaults to repo name]
+#
+# REQUIRED GITEA SECRETS (Settings > Actions > Secrets):
+#   NPM_TOKEN         - GitHub Personal Access Token with read:packages scope
+# =============================================================================
+
 on:
   push:
     branches:
@@ -16,6 +26,7 @@ jobs:
     runs-on: [docker]
     container:
       image: ${{ vars.REGISTRY_HOST }}/${{ vars.REGISTRY_IMAGE }}
+      options: --add-host gitea:192.168.1.150 --network=host
     env:
       REGISTRY_HOST: ${{ vars.REGISTRY_HOST }}
       REGISTRY_IMAGE: ${{ vars.REGISTRY_IMAGE }}
@@ -31,6 +42,23 @@ jobs:
           if [ -z "${{ vars.REGISTRY_IMAGE }}" ]; then
             echo "ERROR: REGISTRY_IMAGE variable is not set"
             exit 1
+          fi
+          echo "Registry: ${{ vars.REGISTRY_HOST }}"
+          echo "Image: ${{ vars.REGISTRY_IMAGE }}"
+
+      - name: Install Git
+        run: |
+          if ! command -v git &> /dev/null; then
+            echo "Git not found. Installing..."
+            if command -v apk &> /dev/null; then
+              apk add --no-cache git
+            elif command -v apt-get &> /dev/null; then
+              apt-get update && apt-get install -y git
+            else
+              echo "WARNING: Could not identify package manager to install git. Proceeding without it."
+            fi
+          else
+            echo "Git is already installed."
           fi
 
       - name: Checkout code
@@ -57,7 +85,11 @@ jobs:
           provenance: false
           cache-from: type=registry,ref=${{ vars.REGISTRY_HOST }}/${{ env.APP_NAME }}:buildcache
           cache-to: type=registry,ref=${{ vars.REGISTRY_HOST }}/${{ env.APP_NAME }}:buildcache,mode=max
+          build-args: |
+            NPM_TOKEN=${{ secrets.NPM_TOKEN }}
 
       - name: Notify deployment success
         if: success()
-        run: echo "Docker image built and pushed successfully!"
+        run: |
+          echo "Docker image built and pushed successfully!"
+          echo "Registry: ${{ vars.REGISTRY_HOST }}/${{ env.APP_NAME }}:latest"
