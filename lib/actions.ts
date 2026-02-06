@@ -57,6 +57,18 @@ export async function updateBlocksAction(pageId: number, blocks: any[]) {
   revalidatePath(`/p/${pageId}`);
 }
 
+export async function toggleBlockAction(blockId: number) {
+  const block = db.prepare('SELECT content, page_id FROM blocks WHERE id = ?').get(blockId) as any;
+  if (!block) return;
+
+  const isChecked = block.content.startsWith('[x] ');
+  const newContent = isChecked ? block.content.substring(4) : '[x] ' + block.content;
+
+  db.prepare('UPDATE blocks SET content = ? WHERE id = ?').run(newContent, blockId);
+  revalidatePath('/tasks');
+  revalidatePath(`/p/${block.page_id}`);
+}
+
 export async function emptyTrashAction() {
   db.prepare('DELETE FROM pages WHERE is_deleted = 1').run();
   revalidatePath('/');

@@ -61,6 +61,13 @@ export default function Sidebar({ pages }: { pages: any[] }) {
                     </h3>
                     <span className="text-[11px] font-mono opacity-40 text-secondary">{grouped.inbox.length}</span>
                 </Link>
+
+                <Link href="/tasks" className={`flex items-center justify-between px-4 py-2 hover:bg-base-200 rounded-lg mx-2 transition-colors group ${pathname === '/tasks' ? 'bg-base-200 shadow-inner' : ''}`}>
+                    <h3 className={`text-[11px] font-black uppercase tracking-[0.12em] flex items-center gap-2 ${pathname === '/tasks' ? 'text-primary' : 'text-base-content/60'}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${pathname === '/tasks' ? 'bg-primary' : 'bg-base-content/20'}`}></span> Tasks
+                    </h3>
+                </Link>
+
                 {grouped.inbox.length > 0 && (
                     <ul className="menu menu-sm w-full gap-0.5 pl-6 mt-1 pr-2">
                         {grouped.inbox.map((page) => (
