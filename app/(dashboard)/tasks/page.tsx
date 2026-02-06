@@ -5,12 +5,23 @@ import { pageService } from '@/lib/services/pageService';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TasksPage() {
-    const tasks = blockService.getAllTasks();
-    const pendingCount = tasks.filter((t: any) => !t.content.startsWith('[x] ')).length;
+interface PageProps {
+    searchParams: Promise<{ showCompleted?: string }>;
+}
+
+export default async function TasksPage({ searchParams }: PageProps) {
+    const { showCompleted } = await searchParams;
+    const isShowingAll = showCompleted === 'true';
+
+    const allTasks = blockService.getAllTasks();
+    const pendingTasks = allTasks.filter((t: any) => !t.content.startsWith('[x] '));
+    const completedCount = allTasks.length - pendingTasks.length;
+
+    // Decide which tasks to display
+    const displayedTasks = isShowingAll ? allTasks : pendingTasks;
 
     // Group tasks by page
-    const groupedTasks = tasks.reduce((acc: any, task: any) => {
+    const groupedTasks = displayedTasks.reduce((acc: any, task: any) => {
         if (!acc[task.page_id]) {
             acc[task.page_id] = {
                 id: task.page_id,
@@ -33,27 +44,43 @@ export default async function TasksPage() {
                     <div className="h-8 w-1 bg-primary rounded-full"></div>
                     <div>
                         <h1 className="text-xl font-black uppercase tracking-[0.2em] text-base-content">Task Registry</h1>
-                        <p className="text-[10px] font-mono opacity-50 uppercase tracking-widest">Global investigation aggregation: {tasks.length} entries</p>
+                        <p className="text-[10px] font-mono opacity-50 uppercase tracking-widest">
+                            {isShowingAll ? 'Full database dump' : 'Active investigation items'}: {displayedTasks.length} entries
+                        </p>
                     </div>
                 </div>
                 
-                <div className="flex gap-2">
+                <div className="flex items-center gap-3">
+                    {completedCount > 0 && (
+                        <Link 
+                            href={isShowingAll ? '/tasks' : '/tasks?showCompleted=true'}
+                            className="btn btn-ghost btn-xs font-mono text-[9px] uppercase tracking-tighter opacity-50 hover:opacity-100"
+                        >
+                            {isShowingAll ? 'Hide Completed' : `Show Completed (${completedCount})`}
+                        </Link>
+                    )}
                     <div className="bg-base-200 px-3 py-1 rounded border border-base-300 flex items-baseline gap-2">
-                        <span className="text-sm font-black text-primary">{pendingCount}</span>
+                        <span className="text-sm font-black text-primary">{pendingTasks.length}</span>
                         <span className="text-[9px] font-bold uppercase opacity-40">Active</span>
                     </div>
                 </div>
             </header>
 
             {groupedArray.length === 0 ? (
-                <div className="py-20 text-center border-2 border-dashed border-base-300 rounded-xl">
-                    <p className="text-sm font-mono opacity-30 uppercase tracking-tighter">No action items in current database</p>
+                <div className="py-20 text-center border-2 border-dashed border-base-300 rounded-xl bg-base-200/10">
+                    <p className="text-sm font-mono opacity-30 uppercase tracking-tighter">
+                        {isShowingAll ? 'Registry is empty' : 'All clear. No pending action items.'}
+                    </p>
+                    {!isShowingAll && completedCount > 0 && (
+                        <Link href="/tasks?showCompleted=true" className="text-[10px] font-bold text-primary uppercase mt-4 inline-block hover:underline">
+                            View {completedCount} completed items
+                        </Link>
+                    )}
                 </div>
             ) : (
                 <div className="space-y-6">
                     {groupedArray.map((group: any) => (
                         <div key={group.id} className="overflow-hidden">
-                            {/* Compact Group Header */}
                             <div className="flex items-center gap-3 mb-2 px-2">
                                 <span className={`w-2 h-2 rounded-full ${getCategoryBg(group.category)}`}></span>
                                 <Link href={`/p/${group.id}`} className="hover:text-primary transition-colors">
@@ -69,7 +96,6 @@ export default async function TasksPage() {
                                 )}
                             </div>
                             
-                            {/* Dense Task List */}
                             <div className="grid grid-cols-1 divide-y divide-base-200/50 bg-base-100/50 border border-base-200 rounded-lg">
                                 {group.tasks.map((task: any) => (
                                     <TaskItem key={task.id} task={task} />
