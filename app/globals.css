@@ -4,5 +4,23 @@
 }
 
 @theme {
+
   --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
+
+  --font-mono: var(--font-roboto-mono), monospace;
+
+}
+
+
+
+
+
+@layer base {
+
+  body {
+
+    @apply font-sans;
+
+  }
+
 }

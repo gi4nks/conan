@@ -32,8 +32,8 @@ export default async function TasksPage() {
                 <div className="flex items-center gap-4">
                     <div className="h-8 w-1 bg-primary rounded-full"></div>
                     <div>
-                        <h1 className="text-xl font-black uppercase tracking-widest text-base-content">Registry</h1>
-                        <p className="text-[10px] font-mono opacity-40 uppercase">Intelligence aggregation: {tasks.length} entries</p>
+                        <h1 className="text-xl font-black uppercase tracking-[0.2em] text-base-content">Task Registry</h1>
+                        <p className="text-[10px] font-mono opacity-50 uppercase tracking-widest">Global investigation aggregation: {tasks.length} entries</p>
                     </div>
                 </div>
                 

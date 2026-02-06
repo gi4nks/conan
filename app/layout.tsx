@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { Roboto, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import ThemeInitializer from "@/components/ThemeInitializer";
 
@@ -8,6 +8,12 @@ const roboto = Roboto({
   subsets: ["latin"],
   display: 'swap',
   variable: '--font-roboto',
+});
+
+const robotoMono = Roboto_Mono({
+  subsets: ["latin"],
+  display: 'swap',
+  variable: '--font-roboto-mono',
 });
 
 export const metadata: Metadata = {
@@ -21,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={roboto.variable}>
+    <html lang="en" className={`${roboto.variable} ${robotoMono.variable}`}>
       <body className="antialiased font-sans">
         <ThemeInitializer />
         {children}
