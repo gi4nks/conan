@@ -25,7 +25,7 @@ export const blockService = {
       SELECT b.*, p.title as page_title, p.category as page_category, p.deadline as page_deadline
       FROM blocks b
       JOIN pages p ON b.page_id = p.id
-      WHERE b.type = 'checklist' AND p.is_deleted = 0
+      WHERE b.type = 'checkbox' AND p.is_deleted = 0
       ORDER BY 
         CASE WHEN p.deadline IS NULL THEN 1 ELSE 0 END,
         p.deadline ASC, 
