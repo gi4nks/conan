@@ -55,17 +55,17 @@ export default function Sidebar({ pages }: { pages: any[] }) {
 
         <div className="flex-1 overflow-y-auto py-2 pb-12 scrollbar-thin">
             <div className="mb-2">
+                <Link href="/tasks" className={`flex items-center justify-between px-4 py-2 hover:bg-base-200 rounded-lg mx-2 transition-colors group ${pathname === '/tasks' ? 'bg-base-200 shadow-inner' : ''}`}>
+                    <h3 className={`text-[11px] font-black uppercase tracking-[0.12em] flex items-center gap-2 ${pathname === '/tasks' ? 'text-primary' : 'text-base-content/60'}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${pathname === '/tasks' ? 'bg-primary' : 'bg-base-content/20'}`}></span> Tasks
+                    </h3>
+                </Link>
+
                 <Link href="/inbox" className="flex items-center justify-between px-4 py-2 hover:bg-base-200 rounded-lg mx-2 transition-colors group">
                     <h3 className="text-[11px] font-black text-secondary uppercase tracking-[0.12em] flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span> Inbox
                     </h3>
                     <span className="text-[11px] font-mono opacity-40 text-secondary">{grouped.inbox.length}</span>
-                </Link>
-
-                <Link href="/tasks" className={`flex items-center justify-between px-4 py-2 hover:bg-base-200 rounded-lg mx-2 transition-colors group ${pathname === '/tasks' ? 'bg-base-200 shadow-inner' : ''}`}>
-                    <h3 className={`text-[11px] font-black uppercase tracking-[0.12em] flex items-center gap-2 ${pathname === '/tasks' ? 'text-primary' : 'text-base-content/60'}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${pathname === '/tasks' ? 'bg-primary' : 'bg-base-content/20'}`}></span> Tasks
-                    </h3>
                 </Link>
 
                 {grouped.inbox.length > 0 && (
