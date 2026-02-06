@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ConfirmModal from './ConfirmModal';
@@ -14,6 +14,11 @@ type Page = {
 export default function InboxList({ items }: { items: Page[] }) {
   const router = useRouter();
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleMove = async (id: number, category: string) => {
     await fetch(`/api/pages/${id}`, {
@@ -53,7 +58,7 @@ export default function InboxList({ items }: { items: Page[] }) {
                         {page.title || 'Untitled'}
                     </Link>
                     <div className="text-xs text-base-content/50 mt-1">
-                        {new Date(page.created_at * 1000).toLocaleDateString()}
+                        {mounted ? new Date(page.created_at * 1000).toLocaleDateString() : 'Loading date...'}
                     </div>
                 </div>
 

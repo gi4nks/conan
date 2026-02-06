@@ -2,10 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { restorePageAction, deletePagePermanentlyAction, emptyTrashAction } from '@/lib/actions';
 
 export default function Sidebar({ pages }: { pages: any[] }) {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const grouped = {
     inbox: pages.filter(p => (!p.category || p.category === 'inbox') && p.is_deleted === 0),
@@ -35,6 +41,8 @@ export default function Sidebar({ pages }: { pages: any[] }) {
           </ul>
       </details>
   );
+
+  if (!mounted) return <aside className="w-64 bg-base-100 shadow-xl flex flex-col shrink-0 h-full relative border-r border-base-300"></aside>;
 
   return (
     <aside className="w-64 bg-base-100 shadow-xl flex flex-col shrink-0 h-full relative">
