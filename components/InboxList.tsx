@@ -44,7 +44,7 @@ export default function InboxList({ items }: { items: Page[] }) {
 
   return (
     <>
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="w-full space-y-4">
         {items.map((page) => (
             <div key={page.id} className="card bg-base-100 shadow-sm border border-base-200 flex-row items-center p-4 gap-4 hover:border-primary/50 transition-colors">
                 

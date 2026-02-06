@@ -254,7 +254,7 @@ export default function Editor({ initialPage, initialBlocks, allPages, backlinks
             </div>
         </div>
         
-        <div className="px-8 md:px-16 w-full">
+        <div className="px-4 md:px-8 w-full">
             <input className="text-4xl font-black w-full bg-transparent border-none focus:outline-none mb-10 placeholder-base-content/10 tracking-tight" value={store.title} onChange={(e) => store.setTitle(e.target.value)} placeholder="Untitled Page" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (store.blocks.length > 0) { store.setFocusedBlockId(store.blocks[0].tempId); } else { store.addBlock('paragraph', -1); } } }} />
             
             <DndContext id="editor-dnd-context" sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
